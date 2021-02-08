@@ -20,6 +20,7 @@ Right now, this is a _very_ rudimentary package and is not intended for public u
 ## Changelog
 
 * 0.1 - Initial commit; basic trading should theoretically work but hasn't been tested on a live market
+* 0.2 - Fixed trading logic; currently runs on a live paper market as expected.
 
 ## TODO
 
