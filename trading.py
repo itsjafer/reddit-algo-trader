@@ -73,7 +73,7 @@ class AlpacaTrader:
                 tRebalance = threading.Thread(target=self.rebalance)
                 tRebalance.start()
                 tRebalance.join()
-                # time.sleep(60)
+                time.sleep(30)
 
     def rebalance(self):
         tRerank = threading.Thread(target=self.rerank)
@@ -96,7 +96,6 @@ class AlpacaTrader:
         for position in positions:
             # Remove positions that are no longer in the positions set
             if position.symbol not in self.positions:
-                # print(f"We are going to sell {position.symbol}")
                 # Sell the position
                 respSO = []
                 tSO = threading.Thread(target=self.submitOrder, args=[int(position.qty), position.symbol, "sell", respSO])
@@ -108,9 +107,9 @@ class AlpacaTrader:
                     # print(f"We already have the correct amount of shares for {position.symbol}. Skipping.")
                     pass
                 else:
-                    # print(f"Adjusting position amount for {position.symbol}")
                     # Need to adjust position amount
-                    diff = abs(int(float(position.qty))) - self.qBuying[position.symbol]
+                    diff = int(self.qBuying[position.symbol]) - int(float(position.qty))
+                    print(f"Adjusting position amount for {position.symbol} from {position.qty} to {self.qBuying[position.symbol]}.")
                     if (diff > 0):
                         side = "buy"
                     else:
@@ -138,12 +137,14 @@ class AlpacaTrader:
             tGetTP.join()
         
         # resubmit orders that were not completed
-        for stock in respGetTP:
-            qty = respGetTP[stock]
+        for stock in respSendBO[0][1]:
+            qty = self.qBuying[stock]
             respResendBO = []
             tResendBO = threading.Thread(target=self.submitOrder, args=[qty, stock, "buy", respResendBO])
             tResendBO.start()
             tResendBO.join()
+
+        self.qBuying.clear()
             
     def rerank(self):
         tRank = threading.Thread(target=self.rank)
@@ -173,7 +174,7 @@ class AlpacaTrader:
 
     def getTickers(self):
         # the core ranking mechanism, reddit popularity
-        stockAnalysis = stock_analysis.StockAnalysis(32)
+        stockAnalysis = stock_analysis.StockAnalysis(200)
         scraped_tickers, numPosts = stockAnalysis.getTickersFromSubreddit(self.subreddit)
         top_tickers = dict(sorted(scraped_tickers.items(), key=lambda x: x[1], reverse = True))
         ticker_set = set(list(top_tickers)[0:10])
@@ -222,5 +223,5 @@ class AlpacaTrader:
             isOpen = self.alpaca.get_clock().is_open
 
 if __name__ == "__main__":
-    alpacaTrader = AlpacaTrader("wallstreetbets+pennystocks")
+    alpacaTrader = AlpacaTrader("robinhoodpennystocks+pennystocks")
     alpacaTrader.run()
