@@ -46,17 +46,10 @@ class StockAnalysis:
             submission.comments.replace_more(self.limit)
             for comment in comments:
                 try:
-                    if comment.score < self.UPVOTES:
-                        continue 
-                except AttributeError:
-                    continue
-
-                try:
                     commentAuthor = comment.author.name
-                except:
-                    continue
-
-                if commentAuthor in authors:
+                    if comment.score < self.UPVOTES or commentAuthor in authors:
+                        continue
+                except: # if the author wasn't found, or no score available 
                     continue
 
                 for word in comment.body.split(" "):

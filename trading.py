@@ -1,11 +1,11 @@
 # This file contains the logic for performing trades based on
 # the info from our subreddits
 
-# 1. We liquidate all positions that are no longer in the top 10
-# 2. We purchase the stocks that have recently entered the top 10
-# 3. If there is any remaining equity, we split it amongst the current top 10 (favours high performing stocks)
-# 4. 
-# 3. Rinse and repeat everyday
+
+# 1. We start by waiting for market open
+# 2. We close all open orders
+# 3. We rebalance our portfolio based on reddit
+# 4. Rinse and repeat every minute or so 
 
 import alpaca_trade_api as tradeapi
 import stock_analysis
@@ -16,7 +16,6 @@ import collections
 
 class AlpacaTrader:
     def __init__(self, subreddit):
-        self.positions = None
         self.subreddit = subreddit
         self.init()
 
@@ -32,23 +31,18 @@ class AlpacaTrader:
         self.positions = None 
         self.adjustedQBuying = None
 
-    def getAccountInfo(self):
-        pass
-
     def run(self):
-        # Reference: https://github.com/alpacahq/alpaca-trade-api-python/tree/master/examples
         # First, cancel any existing orders so they don't impact our buying power.
         orders = self.alpaca.list_orders(status="open")
         for order in orders:
             self.alpaca.cancel_order(order.id)
 
-        # Wait for the market to open
         # Wait for market to open.
-        # print("Waiting for market to open...")
-        # tAMO = threading.Thread(target=self.awaitMarketOpen)
-        # tAMO.start()
-        # tAMO.join()
-        # print("Market opened.")
+        print("Waiting for market to open...")
+        tAMO = threading.Thread(target=self.awaitMarketOpen)
+        tAMO.start()
+        tAMO.join()
+        print("Market opened.")
 
         # Rebalance the portfolio as much as we can
         while True:
@@ -93,7 +87,6 @@ class AlpacaTrader:
         
         print("We are going to keep the following positions: " + str(self.positions))
 
-        # Remove positions that are no longer in the positions set
         executed = []
         positions = self.alpaca.list_positions()
         # positions = self.alpaca.list_orders(status="all", limit=10)
@@ -101,6 +94,7 @@ class AlpacaTrader:
 
         self.blacklist.clear()
         for position in positions:
+            # Remove positions that are no longer in the positions set
             if position.symbol not in self.positions:
                 # print(f"We are going to sell {position.symbol}")
                 # Sell the position
@@ -128,12 +122,14 @@ class AlpacaTrader:
                 executed.append(position.symbol)
                 self.blacklist.add(position.symbol)
             
+        # submit the orders to be executed
         respSendBO = []
         tSendBO = threading.Thread(target=self.sendBatchOrder, args=[self.qBuying, self.positions, "buy", respSendBO])
         tSendBO.start()
         tSendBO.join()
         respSendBO[0][0] += executed
 
+        # find out which orders didn't get completed
         respGetTP = collections.defaultdict(int)
         if (len(respSendBO[0][1]) > 0):
             print("Some orders were not completed successfully. Retrying.")
@@ -141,6 +137,7 @@ class AlpacaTrader:
             tGetTP.start()
             tGetTP.join()
         
+        # resubmit orders that were not completed
         for stock in respGetTP:
             qty = respGetTP[stock]
             respResendBO = []
@@ -153,6 +150,7 @@ class AlpacaTrader:
         tRank.start()
         tRank.join()
 
+        # figure out how many shares to buy of each stock
         self.equity = int(float(self.alpaca.get_account().equity))
         self.equityPerStock = int(self.equity // len(self.positions))
 
@@ -174,6 +172,7 @@ class AlpacaTrader:
         tGetPC.join()
 
     def getTickers(self):
+        # the core ranking mechanism, reddit popularity
         stockAnalysis = stock_analysis.StockAnalysis(32)
         scraped_tickers, numPosts = stockAnalysis.getTickersFromSubreddit(self.subreddit)
         top_tickers = dict(sorted(scraped_tickers.items(), key=lambda x: x[1], reverse = True))
@@ -205,17 +204,11 @@ class AlpacaTrader:
                 print("Market order of | " + str(qty) + " " + stock + " " + side + " | completed.")
                 resp.append(True)
             except:
-                print("Order of | " + str(qty) + " " + stock + " " + side + " | did not go through.")
+                print("Market Order of | " + str(qty) + " " + stock + " " + side + " | did not go through.")
                 resp.append(False)
         else:
-            print("Quantity is 0, order of | " + str(qty) + " " + stock + " " + side + " | not completed.")
+            print("Market Order of | " + str(qty) + " " + stock + " " + side + " | not completed.")
             resp.append(True) 
-        
-    def liquidatePositions(self):
-        pass
-
-    def purchasePositions(self):
-        pass
 
     def awaitMarketOpen(self):
         isOpen = self.alpaca.get_clock().is_open
