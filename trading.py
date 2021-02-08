@@ -13,16 +13,22 @@ import threading
 import time
 import datetime
 import collections
+import os
+from dotenv import load_dotenv
+from pathlib import Path
 
 class AlpacaTrader:
-    def __init__(self, subreddit):
+    def __init__(self, subreddit, limit):
+        env_path = Path('.') / '.env'
+        load_dotenv(dotenv_path=env_path)
+        self.limit = limit
         self.subreddit = subreddit
         self.init()
 
     def init(self):
         self.alpaca = tradeapi.REST(
-            '',
-            '',
+            os.getenv("ACCESS_KEY_ID"),
+            os.getenv("SECRET_ACCESS_KEY"),
             base_url="https://paper-api.alpaca.markets"
         )
         self.equity = None
@@ -52,11 +58,16 @@ class AlpacaTrader:
             currTime = clock.timestamp.replace(tzinfo=datetime.timezone.utc).timestamp()
             self.timeToClose = closingTime - currTime
 
+            if(self.timeToClose < (60 * 10)):
+                print("Terminating. Goodbye!")
+                exit()
             if(self.timeToClose < (60 * 15)):
                 # Close all positions when 15 minutes til market close.
                 print("Market closing soon.  Closing positions.")
 
                 positions = self.alpaca.list_positions()
+                if (len(positions) <= 0):
+                    exit()
                 for position in positions:
                     orderSide = 'sell'
                     qty = abs(int(float(position.qty)))
@@ -66,14 +77,12 @@ class AlpacaTrader:
                     tSubmitOrder.join()
 
                 # Run script again after market close for next trading day.
-                print("Sleeping until market close (15 minutes).")
-                time.sleep(60 * 15)
+                print("Selling all positions.")
             else:
                 # Rebalance the portfolio.
                 tRebalance = threading.Thread(target=self.rebalance)
                 tRebalance.start()
                 tRebalance.join()
-                time.sleep(30)
 
     def rebalance(self):
         tRerank = threading.Thread(target=self.rerank)
@@ -89,8 +98,6 @@ class AlpacaTrader:
 
         executed = []
         positions = self.alpaca.list_positions()
-        # positions = self.alpaca.list_orders(status="all", limit=10)
-        # print(positions)
 
         self.blacklist.clear()
         for position in positions:
@@ -174,7 +181,7 @@ class AlpacaTrader:
 
     def getTickers(self):
         # the core ranking mechanism, reddit popularity
-        stockAnalysis = stock_analysis.StockAnalysis(200)
+        stockAnalysis = stock_analysis.StockAnalysis(self.limit)
         scraped_tickers, numPosts = stockAnalysis.getTickersFromSubreddit(self.subreddit)
         top_tickers = dict(sorted(scraped_tickers.items(), key=lambda x: x[1], reverse = True))
         ticker_set = set(list(top_tickers)[0:10])
@@ -223,5 +230,5 @@ class AlpacaTrader:
             isOpen = self.alpaca.get_clock().is_open
 
 if __name__ == "__main__":
-    alpacaTrader = AlpacaTrader("robinhoodpennystocks+pennystocks")
+    alpacaTrader = AlpacaTrader("robinhoodpennystocks+pennystocks", 10)
     alpacaTrader.run()
