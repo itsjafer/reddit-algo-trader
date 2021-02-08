@@ -1,6 +1,9 @@
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/itsjafer/reddit-trending-stocks-index)
 
-# Reddit Stock Trader
+# Reddit Stock Trader (WIP)
+
+![screenshot1](https://i.imgur.com/gJ7TqcV.png)
+![screenshot2](https://i.imgur.com/9EmrOJz.png)
 
 This package contains two modules:
 1. StockAnalysis - a module that looks through a subreddit for the most commonly mentioned stocks
