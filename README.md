@@ -27,3 +27,9 @@ Right now, this is a _very_ rudimentary package and is not intended for public u
 * Add filters for types of stock to avoid purchasing (i.e. specific countries/industries)
 * Test on a live market scenario
 * Add a non-daytrade strategy of buying and holding once a day
+
+## Development
+
+* I coded this entire project on my iPad using gitpod.io!
+* You can get the project running by opening it in a gitpod IDE by clicking here: [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/itsjafer/reddit-trending-stocks-index)
+* Run `make setup` followed by `make run_trader` or `make run_analysis` depending on which module you'd like to run. Remember to fill in credentials details for the corresponding module
