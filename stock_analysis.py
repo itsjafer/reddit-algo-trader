@@ -72,7 +72,6 @@ class StockAnalysis:
         subreddit = self.reddit.subreddit(sub)
         sortedByHot = subreddit.hot(limit=self.limit)
         allTickers = self.getAllTickers()
-        
         numPosts, tickers = 0, collections.defaultdict(int)
         for submission in sortedByHot:
             if submission.upvote_ratio < self.UPVOTE_RATIO or submission.ups < self.UPVOTES:
