@@ -60,13 +60,9 @@ class AlpacaTrader:
             currTime = clock.timestamp.replace(tzinfo=datetime.timezone.utc).timestamp()
             self.timeToClose = closingTime - currTime
 
-            if(self.timeToClose < (60 * 5)):
-                print("Terminating. Goodbye!")
-                exit()
             if(self.timeToClose < (60 * 15)):
-
-                # Testing out holding overnight, skipping this code
-                continue
+                print("Market closing soon. Exiting.")
+                exit()
                 # Close all positions when 15 minutes til market close.
                 print("Market closing soon.  Closing positions.")
 
