@@ -20,5 +20,11 @@ run_trade:
 		python3 trading.py; \
 	)
 
+run_sentiment_trade:
+	( \
+		. venv/bin/activate; \
+		python3 trading.py sentiment; \
+	)
+
 clean:
 	rm -rf venv
