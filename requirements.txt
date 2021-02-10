@@ -4,4 +4,4 @@ pytickersymbols==1.4.3
 alpaca-trade-api==0.52.0
 python-dotenv==0.15.0
 pmaw==0.1.2
-nltk==3.5
+vaderSentiment==3.3.2

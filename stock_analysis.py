@@ -9,18 +9,15 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from pathlib import Path  # Python 3.6+ only
 from pmaw import PushshiftAPI
-import nltk
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from reddit_lingo import reddit_lingo, blacklist
-
-nltk.download('vader_lexicon')
 
 class StockAnalysis:
 
     def __init__(self, limit, sentiment):
         env_path = Path('.') / '.env'
         load_dotenv(dotenv_path=env_path)
-        self.UPVOTES = 2
+        self.UPVOTES = 1
         self.BLACKLIST = blacklist
         self.UPVOTE_RATIO = 0.70 
         self.reddit = praw.Reddit(
@@ -95,7 +92,7 @@ if __name__ == "__main__":
 
     sentiment = True
     stockAnalysis = StockAnalysis(1000, sentiment)
-
+    
     subreddits = [
         # "wallstreetbets",
         "robinhood+pennystocks",

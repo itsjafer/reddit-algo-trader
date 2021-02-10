@@ -28,7 +28,7 @@ reddit_lingo = {
     'green': 1.9,
     'money': 1.2,
     'print': 2.2,
-    'rocket': 2.2,
+    'rocket': 1.5,
     'bull': 2.9,
     'bear': -2.9,
     'pumping': -1.0,
