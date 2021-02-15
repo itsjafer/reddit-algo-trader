@@ -1,6 +1,6 @@
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/itsjafer/reddit-trending-stocks-index)
 
-# Reddit Stock Trader (WIP)
+# Reddit Stock Trader
 
 ![screenshot1](https://i.imgur.com/jcUoc4w.png)
 ![screenshot2](https://i.imgur.com/9EmrOJz.png)
