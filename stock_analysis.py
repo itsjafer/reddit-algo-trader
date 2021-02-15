@@ -7,7 +7,7 @@ import time
 import pandas as pd
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from pathlib import Path  # Python 3.6+ only
+from pathlib import Path 
 from pmaw import PushshiftAPI
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from reddit_lingo import reddit_lingo, blacklist
@@ -48,10 +48,8 @@ class StockAnalysis:
         sortedByHot = subreddit.hot(limit=self.limit)
         allTickers = self.getAllTickers()
         numPosts = 0 
-        if self.sentiment:
-            tickers = collections.defaultdict(set)
-        else:
-            tickers = collections.defaultdict(int)
+        tickersSentiment = collections.defaultdict(set)
+        tickers = collections.defaultdict(int)
         for submission in sortedByHot:
             if submission.upvote_ratio < self.UPVOTE_RATIO or submission.ups < self.UPVOTES:
                 continue 
@@ -69,6 +67,9 @@ class StockAnalysis:
                         continue
                 except: # if the author wasn't found, or no score available 
                     continue
+                
+                if comment.body.isupper():
+                    continue
 
                 numPosts += 1
                 for word in comment.body.split(" "):
@@ -78,41 +79,58 @@ class StockAnalysis:
                         continue
                     authors.add(commentAuthor)
                     if (self.sentiment):
-                        tickers[word].add(self.getSentimentScore(comment.body))
-                    else:
-                        tickers[word] += 1
+                        tickersSentiment[word].add(self.getSentimentScore(comment.body))
+                    tickers[word] += 1
 
-        return tickers, numPosts
+        return tickers, tickersSentiment, numPosts
 
     def getSentimentScore(self, comment):
         score = self.vader.polarity_scores(comment)
-        return score['pos'] - score['neg']
+        return score
 
 if __name__ == "__main__":
 
-    sentiment = True
-    stockAnalysis = StockAnalysis(1000, sentiment)
-    
+    sentiment = False
+    stockAnalysis = StockAnalysis(100, sentiment)
+
     subreddits = [
         # "wallstreetbets",
-        "robinhood+pennystocks",
+        "robinhoodpennystocks+pennystocks",
         # "stocks"
     ]
 
     for subreddit in subreddits:
         startTime = time.time()
-        scraped_tickers, numPosts = stockAnalysis.getTickersFromSubreddit(subreddit)
+        scraped_tickers, scraped_sentiment, numPosts = stockAnalysis.getTickersFromSubreddit(subreddit)
         if (sentiment):
-            for ticker in scraped_tickers:
-                if len(scraped_tickers[ticker]) <= 5:
-                    scraped_tickers[ticker] = 0
+            for ticker in scraped_sentiment:
+                if len(scraped_sentiment[ticker]) <= 2:
+                    scraped_sentiment[ticker] = 0
                     continue
-                scraped_tickers[ticker] = sum(scraped_tickers[ticker])/len(scraped_tickers[ticker])    
-        
-        top_tickers = dict(sorted(scraped_tickers.items(), key=lambda x: x[1], reverse = True))
-        print(f"This took {(time.time() - startTime)/60} minutes")
-        print(f"Scraped {numPosts} posts in {subreddit}")
-        print("Ticker: score")
-        ticker_list = list(top_tickers)[0:10]
-        for ticker in ticker_list:
-            print(f"{ticker}: {top_tickers[ticker]}")
+                scraped_sentiment[ticker] = sum(scraped_sentiment[ticker])/len(scraped_sentiment[ticker])
+            # normalization
+            top_tickers = collections.defaultdict(int)
+            factor=1.0/sum(scraped_sentiment.values())
+            for k in scraped_sentiment:
+                scraped_sentiment[k] = scraped_sentiment[k]*factor
+                top_tickers[k] += scraped_sentiment[k]
+            factor=1.0/sum(scraped_tickers.values())
+            for k in scraped_tickers:
+                scraped_tickers[k] = scraped_tickers[k]*factor
+                top_tickers[k] += scraped_tickers[k]
+            top_tickers = dict(sorted(top_tickers.items(), key=lambda x: x[1], reverse = True))
+            print(f"This took {(time.time() - startTime)/60} minutes")
+            print(f"Scraped {numPosts} posts in {subreddit}")
+            print("Ticker: score")
+            ticker_list = list(top_tickers)[0:10]
+            for ticker in ticker_list:
+                print(f"{ticker}: {top_tickers[ticker]}")
+        else:
+            top_tickers = dict(sorted(scraped_tickers.items(), key=lambda x: x[1], reverse = True))
+            print(f"This took {(time.time() - startTime)/60} minutes")
+            print(f"Scraped {numPosts} posts in {subreddit}")
+            print("Ticker: score")
+            ticker_list = list(top_tickers)[0:10]
+            for ticker in ticker_list:
+                print(f"{ticker}: {top_tickers[ticker]}")
+                

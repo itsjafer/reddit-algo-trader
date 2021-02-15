@@ -2,7 +2,7 @@
 
 # Reddit Stock Trader (WIP)
 
-![screenshot1](https://i.imgur.com/gJ7TqcV.png)
+![screenshot1](https://i.imgur.com/jcUoc4w.png)
 ![screenshot2](https://i.imgur.com/9EmrOJz.png)
 
 This package contains two modules:
@@ -11,7 +11,9 @@ This package contains two modules:
 
 In particular, AlpacaTrader queries the top 10 most commonly mentioned stocks on reddit as often as possible, and rebalances its portfolio accordingly. Whenever a stock leaves the top 10, AlpacaTrader closes its position on that stock. Whenever a stock enters the top 10, AlpacaTrader opens a position for that stock.
 
-Right now, this is a _very_ rudimentary package and is not intended for public use.
+## Live Demo
+
+I've been paper testing this using the Alpaca API. If you'd like to take a look at the performance of the algorithm, [check out the front-end on my website](https://itsjafer.com/#/trader)!
 
 ## Prerequisites
 * [Alpaca](https://alpaca.markets) account with an API key pair
@@ -21,10 +23,10 @@ Right now, this is a _very_ rudimentary package and is not intended for public u
 
 * 0.1 - Initial commit; basic trading should theoretically work but hasn't been tested on a live market
 * 0.2 - Fixed trading logic; currently runs on a live paper market as expected.
+* 1.0 - Added a second algorithm based on sentiment, created a front-end to track the algorithms
 
 ## TODO
 
-* Add sentiment analysis as part of a comprehensive score for stocks rather than simply occurrences
 * Add filters for types of stock to avoid purchasing (i.e. specific countries/industries)
 * Test on a live market scenario
 * Add a non-daytrade strategy of buying and holding once a day

@@ -183,5 +183,8 @@ blacklist = {
    "CPU",
    "AT",
    "GG",
-   "Mar"
+   "Mar",
+   "PSA",
+   "FTC",
+   "ELSE"
 }

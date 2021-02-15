@@ -183,7 +183,17 @@ class AlpacaTrader:
     def getTickers(self):
         # the core ranking mechanism, reddit popularity
         stockAnalysis = stock_analysis.StockAnalysis(self.limit, self.sentiment)
-        scraped_tickers, numPosts = stockAnalysis.getTickersFromSubreddit(self.subreddit)
+        scraped_tickers, scraped_sentiment, numPosts = stockAnalysis.getTickersFromSubreddit(self.subreddit)
+        top_tickers = collections.defaultdict(int)
+        if self.sentiment:
+            factor=1.0/sum(scraped_sentiment.values())
+            for k in scraped_sentiment:
+                scraped_sentiment[k] = scraped_sentiment[k]*factor
+                top_tickers[k] += scraped_sentiment[k]
+            factor=1.0/sum(scraped_tickers.values())
+            for k in scraped_tickers:
+                scraped_tickers[k] = scraped_tickers[k]*factor
+                top_tickers[k] += scraped_tickers[k]
         top_tickers = dict(sorted(scraped_tickers.items(), key=lambda x: x[1], reverse = True))
         ticker_set = set(list(top_tickers)[0:10])
         self.positions = ticker_set
