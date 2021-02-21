@@ -86,11 +86,11 @@ class StockAnalysis:
 
     def getSentimentScore(self, comment):
         score = self.vader.polarity_scores(comment)
-        return score
+        return score['compound']
 
 if __name__ == "__main__":
 
-    sentiment = False
+    sentiment = True
     stockAnalysis = StockAnalysis(100, sentiment)
 
     subreddits = [

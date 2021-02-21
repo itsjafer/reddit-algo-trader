@@ -186,6 +186,11 @@ class AlpacaTrader:
         scraped_tickers, scraped_sentiment, numPosts = stockAnalysis.getTickersFromSubreddit(self.subreddit)
         top_tickers = collections.defaultdict(int)
         if self.sentiment:
+            for ticker in scraped_sentiment:
+                if len(scraped_sentiment[ticker]) <= 2:
+                    scraped_sentiment[ticker] = 0
+                    continue
+                scraped_sentiment[ticker] = sum(scraped_sentiment[ticker])/len(scraped_sentiment[ticker])
             factor=1.0/sum(scraped_sentiment.values())
             for k in scraped_sentiment:
                 scraped_sentiment[k] = scraped_sentiment[k]*factor
