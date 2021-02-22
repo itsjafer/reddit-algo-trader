@@ -33,15 +33,19 @@ class StockAnalysis:
         self.vader.lexicon.update(reddit_lingo)
         
     def getAllTickers(self):
-        URL = "https://dumbstockapi.com/stock"
-        param = dict(
-            format="tickers-only",
-            exchanges="NYSE,NASDAQ,AMEX"
-        )
+        # URL = "https://dumbstockapi.com/stock"
+        # param = dict(
+        #     format="tickers-only",
+        #     exchanges="NYSE,NASDAQ,AMEX"
+        # )
 
-        response = requests.get(url=URL, params=param)
-        data = response.json()
-        return set(data)
+        # response = requests.get(url=URL, params=param)
+        # data = response.json()
+        # return set(data)
+        from urllib.request import urlopen
+        r = urlopen("https://www.sec.gov/include/ticker.txt")
+        tickers = {line.decode('UTF-8').split("\t")[0].upper() for line in r}
+        return tickers
 
     def getTickersFromSubreddit(self, sub):
         subreddit = self.reddit.subreddit(sub)
@@ -91,7 +95,7 @@ class StockAnalysis:
 if __name__ == "__main__":
 
     sentiment = True
-    stockAnalysis = StockAnalysis(100, sentiment)
+    stockAnalysis = StockAnalysis(10, sentiment)
 
     subreddits = [
         # "wallstreetbets",
